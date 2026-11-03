@@ -1,2 +1,2 @@
-# Tavola – Sapori d'Oro
-Site static pentru GitHub Pages. Pune pozele în `assets/img/` (vezi numele în README-ul din chat) și cheia Web3Forms în `assets/js/data.js`.
+# Tavola
+Site web pentru servicii de catering în Republica Moldova, cu livrare worldwide a seturilor de cașcaval.
