@@ -13,6 +13,22 @@ async function send(body,form,msg){
  btn.disabled=false;msg.scrollIntoView({behavior:'smooth',block:'center'});
 }
 const infoBlock=`<p><b>Telefon</b><br><a href="tel:${CONTACT.tel.replace(/\s/g,'')}">${CONTACT.tel}</a></p><p><b>Email</b><br><a href="mailto:${CONTACT.email}">${CONTACT.email}</a></p><p><b>Adresă</b><br>${CONTACT.adresa}</p><p><b>Program</b><br>${CONTACT.program}</p>`;
+
+const platterHTML=`<section class="wrap" id="platou"><h2>Creează-ți platoul charcuterie</h2><div id="platmsg"></div>
+<form id="platForm" class="builder" novalidate>
+ <label>Mărimea platoului<select name="marime"><option value="">Alege mărimea</option>${PLATTER_SIZES.map((x,i)=>`<option value="${i}">${x.nume} – de la ${x.pret} lei</option>`).join('')}</select></label>
+ <p>Alege doar ce îți place. <b>Primele 2 opțiuni din fiecare categorie sunt incluse în preț.</b> Fiecare opțiune suplimentară adaugă <b>+10 lei</b>. Selectate: <b id="platCount">0</b></p>
+ ${Object.entries(PLATTER_ITEMS).map(([g,l])=>`<fieldset><legend>${g}</legend>${l.map(o=>`<label class="chk"><input type="checkbox" name="pi" data-g="${g}" value="${o}"> ${o}</label>`).join('')}</fieldset>`).join('')}
+ <label>Alergii sau alte dorințe (opțional)<textarea name="mesaj" rows="2" maxlength="500"></textarea></label>
+ <label class="chk"><input type="checkbox" name="gift"> Este cadou</label>
+ <div id="platGift" hidden><div class="row"><label>Numele destinatarului<input type="text" name="dest" maxlength="100"></label><label>Mesaj pe felicitare<input type="text" name="felicitare" maxlength="200"></label></div></div>
+ <div class="row"><label>Nume și prenume<input type="text" name="nume" maxlength="100"></label><label>Telefon<input type="tel" name="telefon" placeholder="+373 69 123 456"></label></div>
+ <div class="row"><label>Email<input type="email" name="email"></label><label>Data livrării<input type="date" name="data" min="${today}"></label></div>
+ <label>Adresa de livrare<input type="text" name="adresa" maxlength="200"></label>
+ <p class="total">Total estimat: <span id="platTotal">0 lei</span></p><p class="errmsg" id="platerr" role="alert"></p>
+ <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off"><button class="btn" type="submit">Comandă platoul</button>
+</form></section>`;
+
 let main='';
 if(P==='home'){
  main=`<section class="hero"><div class="slides">${HERO_SLIDES.map((s,i)=>`<div class="slide${i?'':' on'}" style="background-image:url('${s}')"></div>`).join('')}</div><div class="shade"></div>
@@ -22,23 +38,30 @@ if(P==='home'){
 }else if(P==='service'){
  const s=SERVICES[cur];
  if(!s)location.replace('index.html');
- else if(cur!=='cheese'){document.title='Tavola – '+s.titlu;
-  main=`<section class="pagehead"><h1>${s.titlu}</h1><p>${s.intro}</p></section><section class="wrap"><div class="grid3">${s.offers.map(o=>card(o[3],o[0],`<p class="price">${o[1]}</p><p>${o[2]}</p>`,`<a class="btn small" href="contact.html?service=${cur}&oferta=${encodeURIComponent(o[0])}#formular">Comandă</a>`)).join('')}</div></section>`;
- }else{document.title='Tavola – '+s.titlu;
-  main=`<section class="pagehead"><h1>${s.titlu}</h1><p>${s.intro}</p><p><a class="btn small" href="#set">Creează-ți setul cu vin</a></p></section>
-  <section class="wrap"><h2>Cașcavaluri la porție</h2><div class="grid4">${CHEESES.map((c,i)=>card(c[3]||IMG('cheese'+i,500,400),c[0],`<p>${c[1]}</p>`,`<p class="price">${c[2]} lei / 100 g</p>`)).join('')}</div></section>
-  <section class="wrap" id="set"><h2>Creează-ți setul: cașcavaluri + vin</h2><div id="setmsg"></div>
-  <form id="setForm" class="builder" novalidate>
-   <div class="row"><label>Mărimea setului<select name="marime"><option value="">Alege mărimea</option>${SETS.map((x,i)=>`<option value="${i}">${x.nume} – ${x.n} cașcavaluri (${x.pret} lei)</option>`).join('')}</select></label>
-   <label>Sticla de vin<select name="vin"><option value="">Alege vinul</option>${WINES.map((x,i)=>`<option value="${i}">${x.nume}${x.pret?' (+'+x.pret+' lei)':''}</option>`).join('')}</select></label></div>
-   <fieldset><legend id="cnt">Alege mai întâi mărimea setului</legend>${CHEESES.map(c=>`<label class="chk"><input type="checkbox" name="chs" value="${c[0]}"> ${c[0]}</label>`).join('')}</fieldset>
-   <label class="chk"><input type="checkbox" name="gift"> Este cadou</label>
-   <div id="giftFields" hidden><div class="row"><label>Numele destinatarului<input type="text" name="dest" maxlength="100"></label><label>Mesaj pe felicitare<input type="text" name="felicitare" maxlength="200"></label></div></div>
-   <div class="row"><label>Nume și prenume<input type="text" name="nume" maxlength="100"></label><label>Telefon<input type="tel" name="telefon" placeholder="+373 69 123 456"></label></div>
-   <div class="row"><label>Email<input type="email" name="email"></label><label>Data livrării<input type="date" name="data" min="${today}"></label></div>
-   <label>Adresa de livrare<input type="text" name="adresa" maxlength="200"></label>
-   <p class="total">Total: <span id="total">0 lei</span></p><p class="errmsg" id="seterr" role="alert"></p>
-   <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off"><button class="btn" type="submit">Comandă setul</button></form></section>`;}
+ else if(cur==='cheese'){
+   // --- PAGINA CHEESE ---
+   document.title='Tavola – '+s.titlu;
+   main=`<section class="pagehead"><h1>${s.titlu}</h1><p>${s.intro}</p><p><a class="btn small" href="#set">Creează-ți setul cu vin</a></p></section>
+   <section class="wrap"><h2>Cașcavaluri la porție</h2><div class="grid4">${CHEESES.map((c,i)=>card(c[3]||IMG('cheese'+i,500,400),c[0],`<p>${c[1]}</p>`,`<p class="price">${c[2]} lei / 100 g</p>`)).join('')}</div></section>
+   <section class="wrap" id="set"><h2>Creează-ți setul: cașcavaluri + vin</h2><div id="setmsg"></div>
+   <form id="setForm" class="builder" novalidate>
+    <div class="row"><label>Mărimea setului<select name="marime"><option value="">Alege mărimea</option>${SETS.map((x,i)=>`<option value="${i}">${x.nume} – ${x.n} cașcavaluri (${x.pret} lei)</option>`).join('')}</select></label>
+    <label>Sticla de vin<select name="vin"><option value="">Alege vinul</option>${WINES.map((x,i)=>`<option value="${i}">${x.nume}${x.pret?' (+'+x.pret+' lei)':''}</option>`).join('')}</select></label></div>
+    <fieldset><legend id="cnt">Alege mai întâi mărimea setului</legend>${CHEESES.map(c=>`<label class="chk"><input type="checkbox" name="chs" value="${c[0]}"> ${c[0]}</label>`).join('')}</fieldset>
+    <label class="chk"><input type="checkbox" name="gift"> Este cadou</label>
+    <div id="giftFields" hidden><div class="row"><label>Numele destinatarului<input type="text" name="dest" maxlength="100"></label><label>Mesaj pe felicitare<input type="text" name="felicitare" maxlength="200"></label></div></div>
+    <div class="row"><label>Nume și prenume<input type="text" name="nume" maxlength="100"></label><label>Telefon<input type="tel" name="telefon" placeholder="+373 69 123 456"></label></div>
+    <div class="row"><label>Email<input type="email" name="email"></label><label>Data livrării<input type="date" name="data" min="${today}"></label></div>
+    <label>Adresa de livrare<input type="text" name="adresa" maxlength="200"></label>
+    <p class="total">Total: <span id="total">0 lei</span></p><p class="errmsg" id="seterr" role="alert"></p>
+    <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off"><button class="btn" type="submit">Comandă setul</button></form></section>`;
+ } else {
+   // --- PAGINA CATERING & CHARCUTERIE ---
+   document.title='Tavola – '+s.titlu;
+   main=`<section class="pagehead"><h1>${s.titlu}</h1><p>${s.intro}</p>${cur==='charcuterie'?'<p><a class="btn small" href="#platou">Creează-ți platoul</a></p>':''}</section>
+   <section class="wrap"><div class="grid3">${s.offers.map(o=>card(o[3],o[0],`<p class="price">${o[1]}</p><p>${o[2]}</p>`,`<a class="btn small" href="contact.html?service=${cur}&oferta=${encodeURIComponent(o[0])}#formular">Comandă</a>`)).join('')}</div></section>
+   ${cur==='charcuterie'?platterHTML:''}`;
+ }
 }else if(P==='gallery'){
  main=`<section class="pagehead"><h1>Galerie</h1><p>Câteva dintre mesele pe care le-am pregătit.</p></section><section class="wrap"><h2>Fotografii</h2>
  <div class="masonry">${GALLERY_IMGS.map(i=>`<img src="${i}" alt="Platou Tavola" loading="lazy">`).join('')}</div><h2>Video</h2>
@@ -117,4 +140,88 @@ if(form){
   const det={};dyn.querySelectorAll(':checked').forEach(c=>(det[c.dataset.g]=det[c.dataset.g]||[]).push(c.value));
   send({subject:`Comandă Tavola – ${f.serviciu.value} / ${f.eveniment.value}`,name:f.nume.value,email:f.email.value,telefon:f.telefon.value,serviciu:f.serviciu.value,eveniment:f.eveniment.value,
    data_eveniment:f.data.value,persoane:f.persoane.value,detalii:Object.entries(det).map(([k,v])=>k+': '+v.join(', ')).join(' | '),mesaj:f.mesaj.value,botcheck:f.botcheck.checked},form,document.getElementById('msg'))};
+}
+
+// ---- Formular platou charcuterie ----
+const pf=document.getElementById('platForm');
+if(pf){
+ const pe=pf.elements,items=[...pf.querySelectorAll('[name=pi]')],sel=()=>items.filter(c=>c.checked);
+ 
+ const upd=()=>{
+   const S=PLATTER_SIZES[pe.marime.value];
+   const checkedItems = sel();
+   
+   const counts = {};
+   checkedItems.forEach(c => {
+       const g = c.dataset.g;
+       counts[g] = (counts[g] || 0) + 1;
+   });
+
+   let extraCost = 0;
+   for (const g in counts) {
+       if (counts[g] > 2) {
+           extraCost += (counts[g] - 2) * 10;
+       }
+   }
+
+   const totalPrice = (S ? S.pret : 0) + extraCost;
+
+   document.getElementById('platTotal').textContent = totalPrice + ' lei';
+   document.getElementById('platCount').textContent = checkedItems.length;
+   document.getElementById('platGift').hidden = !pe.gift.checked;
+ };
+
+ pe.marime.onchange=pe.gift.onchange=upd;
+ items.forEach(c=>c.onchange=upd);
+ pf.addEventListener('reset',()=>setTimeout(upd));
+
+ pf.onsubmit=ev=>{
+   ev.preventDefault();
+   const err=[],S=PLATTER_SIZES[pe.marime.value],checkedItems=sel();
+   
+   if(!S)err.push('Alege mărimea platoului.');
+   if(!checkedItems.length)err.push('Alege cel puțin un produs pentru platou.');
+   if(pe.gift.checked&&pe.dest.value.trim().length<2)err.push('Introdu numele destinatarului.');
+   if(pe.nume.value.trim().length<3)err.push('Introdu numele complet.');
+   if(!V.tel(pe.telefon.value))err.push('Telefon invalid.');
+   if(!V.mail(pe.email.value))err.push('Email invalid.');
+   if(!pe.data.value||pe.data.value<today)err.push('Alege o dată de livrare validă.');
+   if(pe.adresa.value.trim().length<5)err.push('Introdu adresa de livrare.');
+   document.getElementById('platerr').textContent=err.join(' ');
+   if(err.length)return;
+
+   const counts = {};
+   checkedItems.forEach(c => {
+       const g = c.dataset.g;
+       counts[g] = (counts[g] || 0) + 1;
+   });
+   let extraCost = 0;
+   for (const g in counts) {
+       if (counts[g] > 2) {
+           extraCost += (counts[g] - 2) * 10;
+       }
+   }
+   const totalPrice = S.pret + extraCost;
+
+   const g={};
+   checkedItems.forEach(c=>(g[c.dataset.g]=g[c.dataset.g]||[]).push(c.value));
+
+   send({
+     subject:'Platou charcuterie personalizat – '+S.nume,
+     name:pe.nume.value,
+     email:pe.email.value,
+     telefon:pe.telefon.value,
+     marime:S.nume,
+     continut:Object.entries(g).map(([k,v])=>k+': '+v.join(', ')).join(' | '),
+     extra_pret:extraCost > 0 ? extraCost + ' lei (' + (extraCost/10) + ' optiuni suplimentare)' : '0 lei',
+     dorinte:pe.mesaj.value,
+     cadou:pe.gift.checked?'DA':'nu',
+     destinatar:pe.dest.value,
+     felicitare:pe.felicitare.value,
+     data_livrare:pe.data.value,
+     adresa:pe.adresa.value,
+     pret_total:totalPrice+' lei',
+     botcheck:pe.botcheck.checked
+   },pf,document.getElementById('platmsg'))
+ };
 }

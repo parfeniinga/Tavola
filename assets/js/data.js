@@ -1,5 +1,5 @@
 // ================= SETĂRI =================
-const WEB3FORMS_KEY = "PUNE_AICI_CHEIA_TA"; // gratuit de la https://web3forms.com
+const WEB3FORMS_KEY = "907328bd-e265-4989-a2e6-a9fdfc479ef6"; // gratuit de la https://web3forms.com
 const CONTACT = {tel:"+373 067432616", email:"contact@tavola.md", adresa:"Str. Alexei Mateevici, or. Cahul", program:"Luni–Duminică, 06:00–02:00"};
 
 // ========= IMAGINI (linkuri provizorii – înlocuiește cu ale tale) =========
@@ -83,7 +83,7 @@ const CHEESES = [
  ["Camembert","Franța · moale, aromat",42,"./assets/img/c5.jpg"],
  ["Gorgonzola","Italia · mucegai albastru",52,"./assets/img/c6.jpg"],
  ["Cheddar","Anglia · maturat, intens",36,"./assets/img/c7.jpg"],
- ["Cașcaval afumat","Local · afumat natural",28,"../assets/img/c8.jpg"],
+ ["Cașcaval afumat","Local · afumat natural",28,"./assets/img/c8.jpg"], // Am corectat ../ în ./
  ["Mozzarella","Italia · proaspătă, fragedă",30,"./assets/img/c9.jpg"],
  ["Provolone","Italia · picant, filat",40,"./assets/img/c10.jpg"],
  ["Manchego","Spania · oi, sărat",55,"./assets/img/c11.jpg"],
@@ -101,6 +101,20 @@ const SETS = [{nume:"Set Mini",n:3,pret:350},{nume:"Set Clasic",n:5,pret:520},{n
 const WINES = [{nume:"Roșu sec – Fetească Neagră",pret:180},{nume:"Alb sec – Chardonnay",pret:160},{nume:"Rosé – Cabernet",pret:150},
  {nume:"Spumant brut",pret:210},{nume:"Roșu demidulce",pret:140},{nume:"Fără vin (doar cașcavaluri)",pret:0}];
 
+// ========= PLATOU CHARCUTERIE PERSONALIZAT =========
+const PLATTER_SIZES = [
+ {nume:"Platou mic (4–6 persoane)",pret:380},
+ {nume:"Platou mediu (8–12 persoane)",pret:650},
+ {nume:"Platou mare (20–25 persoane)",pret:1200}
+];
+const PLATTER_ITEMS = {
+ "Mezeluri":["Prosciutto","Salam uscat","Pastramă de vită","Jambon afumat","Bacon crocant","Mortadella","Chorizo","Bresaola"],
+ "Cașcavaluri":CHEESES.map(c=>c[0]),
+ "Legume":["Roșii cherry","Castraveți","Ardei gras","Măsline","Murături asortate","Morcovi baby","Ridichi","Anghinare"],
+ "Fructe":["Struguri","Smochine","Pere","Mere","Fructe de pădure","Kiwi","Caise uscate","Curmale"],
+ "Nucșoare":["Nuci","Migdale","Alune de pădure","Fistic","Caju","Semințe de dovleac"],
+ "Gemuri și sosuri":["Gem de smochine","Gem de ardei iute","Miere","Muștar dijon","Sos de afine","Hummus","Sos pesto","Dulceață de trandafiri"]
+};
 const EVENT_TYPES=["Nunți","Cumătrii","Botez","Zile de naștere","Gender party","Evenimente corporate","Seară cu prietenii","Alt eveniment"];
 const OPTIONS={
  catering:{"Meniu":["Aperitive reci","Aperitive calde","Fel principal – carne","Fel principal – pește","Garnituri","Salate","Deserturi","Băuturi"]},
